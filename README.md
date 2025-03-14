@@ -20,3 +20,11 @@ Next Steps (Improvements)
 🎵 Add a Stop button 🎵 Display music duration & progress bar 🎵 Create a playlist feature 🎵 Design a modern UI with PyQt stylesheets
 
 
+
+music_player/
+│── main.py  (Main application file)
+│── ui.py  (For managing UI design)
+│── assets/  (Folder for icons, images, etc.)
+│── music/  (Folder to store your music files)
+
+

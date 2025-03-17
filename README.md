@@ -37,5 +37,19 @@ music_player/
 
 
 #ADDED NO COPYRIGHT SONGS IN THE FILES SO YOU DONT HAVE TO DOWNLOAD SONGS
+## Music Credits  
+- [Sky High] by [Elektronomia]  
+- Provided by NoCopyrightSounds  
+- [https://www.youtube.com/watch?v=TW9d8vYrVFQ]  
+
+## Music Credits  
+- [High] by [JPB]  
+- Provided by NoCopyrightSounds  
+- [https://www.youtube.com/watch?v=Tv6WImqSuxA]  
+
+## Music Credits  
+- [Dreams pt. II (feat. Sara Skinner)] by [Lost Sky]  
+- Provided by NoCopyrightSounds  
+- [https://www.youtube.com/watch?v=L7kF4MXXCoA]  
 
 

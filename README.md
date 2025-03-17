@@ -8,6 +8,11 @@ First, install the necessary Python libraries:
 PyQt6 → For the graphical user interface
 pygame → For playing audio
 
+pip install opencv-python
+pip install opencv-python-headless
+
+
+
 Step 2: Create the Project Structure
 
 Step 3: Create the GUI Using PyQt

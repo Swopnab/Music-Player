@@ -28,3 +28,14 @@ music_player/
 │── music/  (Folder to store your music files)
 
 
+
+
+
+
+
+
+
+
+#ADDED NO COPYRIGHT SONGS IN THE FILES SO YOU DONT HAVE TO DOWNLOAD SONGS
+
+

@@ -1,11 +1,11 @@
-from tkinter import filedialog, Listbox, Menu, Frame, Button, PhotoImage, Tk
+from tkinter import filedialog, Listbox, Menu, Frame, Button, PhotoImage, Tk, Scale
 import pygame
 import os
 import cv2
 
 root = Tk()
 root.title('Media Player')
-root.geometry("500x300")
+root.geometry("700x500")
 
 pygame.mixer.init()
 
@@ -17,7 +17,8 @@ current_file = ""
 paused = False
 is_video = False
 
-def load_media():
+
+def load_music():
     global current_file
     root.directory = filedialog.askdirectory()
 
@@ -35,7 +36,7 @@ def load_media():
         songlist.selection_set(0)
         current_file = media_files[songlist.curselection()[0]]
 
-def play_media():
+def play_music():
     global current_file, paused, is_video
 
     if not media_files:
@@ -57,30 +58,19 @@ def play_media():
             pygame.mixer.music.unpause()
             paused = False
 
-def play_video(file_path):
-    cap = cv2.VideoCapture(file_path)
-
-    while cap.isOpened():
-        ret, frame = cap.read()
-        if not ret:
-            break
-        cv2.imshow("Video Player", frame)
-
-        if cv2.waitKey(25) & 0xFF == ord("q"):
-            break
-
-    cap.release()
-    cv2.destroyAllWindows()
-
-def pause_media():
+def pause_music():
     global paused
-    pygame.mixer.music.pause()
-    paused = True
+    if paused:
+        pygame.mixer.music.unpause() 
+        paused = False
+    else:
+        pygame.mixer.music.pause() 
+        paused = True
 
-def stop_media():
+def stop_music():
     pygame.mixer.music.stop()
 
-def next_media():
+def next_music():
     global current_file
     try:
         index = media_files.index(current_file) + 1
@@ -88,11 +78,11 @@ def next_media():
             songlist.selection_clear(0, "end")
             songlist.selection_set(index)
             current_file = media_files[index]
-            play_media()
+            play_music()
     except IndexError:
         pass
 
-def prev_media():
+def prev_music():
     global current_file
     try:
         index = media_files.index(current_file) - 1
@@ -100,33 +90,49 @@ def prev_media():
             songlist.selection_clear(0, "end")
             songlist.selection_set(index)
             current_file = media_files[index]
-            play_media()
+            play_music()
     except IndexError:
         pass
 
-organise_menu = Menu(menubar, tearoff=False)
-organise_menu.add_command(label="Select Folder", command=load_media)
-menubar.add_cascade(label="Organize", menu=organise_menu)
+def update_volume(val):
+    pygame.mixer.music.set_volume(float(val))
 
-songlist = Listbox(root, bg="black", fg="white", width=100, height=15)
-songlist.pack()
+volume_slider = Scale(root, from_=0, to=100, resolution=1, orient="vertical", label="Volume")
+volume_slider.set(1) 
+volume_slider.bind("<Motion>", lambda event: update_volume(volume_slider.get()))
+
+
+organise_menu = Menu(menubar, tearoff=False)
+organise_menu.add_command(label="Select Folder", command=load_music)
+menubar.add_cascade(label="Find", menu=organise_menu)
+
+songlist = Listbox(root, bg="black", fg="white")
+songlist.grid(row=0, column=0, columnspan=4, sticky="nsew")
+
+root.grid_rowconfigure(0, weight=1)
+root.grid_columnconfigure(0, weight=1)
+root.grid_columnconfigure(1, weight=0)
+root.grid_columnconfigure(2, weight=0)
+root.grid_columnconfigure(3, weight=0)
+
+control_frame = Frame(root)
+control_frame.grid(row=1, column=0, columnspan=4, pady=10)
 
 play_btn_image = PhotoImage(file="play.png")
 pause_btn_image = PhotoImage(file="pause.png")
 next_btn_image = PhotoImage(file="next.png")
 prev_btn_image = PhotoImage(file="previous.png")
 
-control_frame = Frame(root)
-control_frame.pack()
-
-play_btn = Button(control_frame, image=play_btn_image, borderwidth=0, command=play_media)
-pause_btn = Button(control_frame, image=pause_btn_image, borderwidth=0, command=pause_media)
-next_btn = Button(control_frame, image=next_btn_image, borderwidth=0, command=next_media)
-prev_btn = Button(control_frame, image=prev_btn_image, borderwidth=0, command=prev_media)
+play_btn = Button(control_frame, image=play_btn_image, borderwidth=0, command=play_music)
+pause_btn = Button(control_frame, image=pause_btn_image, borderwidth=0, command=pause_music)
+next_btn = Button(control_frame, image=next_btn_image, borderwidth=0, command=next_music)
+prev_btn = Button(control_frame, image=prev_btn_image, borderwidth=0, command=prev_music)
 
 prev_btn.grid(row=0, column=0, pady=10, padx=7)
 play_btn.grid(row=0, column=1, pady=10, padx=7)
 pause_btn.grid(row=0, column=2, pady=10, padx=7)
-next_btn.grid(row=0, column=4, pady=10, padx=7)
+next_btn.grid(row=0, column=3, pady=10, padx=7)
+volume_slider.grid(row=1, column=3, pady=10, padx=7)
+
 
 root.mainloop()

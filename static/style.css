@@ -273,11 +273,10 @@ input[type="range"] {
     overflow: hidden;
     /* Keeps the fill inside */
     /* Dynamic fill logic handled in JS via background-image */
-    background-image: linear-gradient(#ffffff, #ffffff);
-    /* Fill color (white to match thumb) */
+    background-image: linear-gradient(#3b82f6, #3b82f6);
+    /* Blue highlight */
     background-repeat: no-repeat;
     background-size: 0% 100%;
-    /* Initially 0% */
 }
 
 /* Track - make transparent so input bg shows */
@@ -303,8 +302,6 @@ input[type="range"]::-webkit-slider-thumb {
     transition: transform 0.1s;
     position: relative;
     z-index: 2;
-    box-shadow: -100vw 0 0 100vw #ffffff;
-    /* Fallback fill trick if gradient fails, but gradient is better */
 }
 
 /* Thumb Hover/Focus */

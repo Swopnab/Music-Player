@@ -1,0 +1,236 @@
+:root {
+    --bg-color: #1e1e1e;
+    --text-color: #ffffff;
+    --accent-color: #fa2d48; /* Apple Music-ish Red/Pink */
+    --glass-bg: rgba(30, 30, 30, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --sidebar-bg: #121212;
+    --hover-bg: rgba(255, 255, 255, 0.1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    height: 100vh;
+    overflow: hidden;
+    background: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
+}
+
+.app-container {
+    display: flex;
+    height: 100vh;
+    flex-direction: row;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 250px;
+    background-color: var(--sidebar-bg);
+    border-right: 1px solid var(--glass-border);
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.logo {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: var(--accent-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.song-list {
+    list-style: none;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.song-item {
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: background 0.2s;
+    color: #ccc;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.song-item:hover {
+    background-color: var(--hover-bg);
+    color: white;
+}
+
+.song-item.active {
+    background-color: var(--hover-bg);
+    color: var(--accent-color);
+    font-weight: 500;
+}
+
+.song-item i {
+    font-size: 0.8rem;
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: radial-gradient(circle at center, rgba(250, 45, 72, 0.1) 0%, transparent 70%);
+}
+
+.now-playing-view {
+    text-align: center;
+}
+
+.album-art-large {
+    width: 200px;
+    height: 200px;
+    background: linear-gradient(45deg, #333, #444);
+    border-radius: 12px;
+    margin: 0 auto 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.album-art-large i {
+    font-size: 4rem;
+    color: #666;
+}
+
+#currentTitleLarge {
+    font-weight: 600;
+    font-size: 1.5rem;
+}
+
+/* Player Bar */
+.player-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 90px;
+    background-color: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--glass-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 30px;
+    z-index: 100;
+}
+
+.track-info {
+    width: 30%;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.track-name {
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.player-controls {
+    width: 40%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.control-buttons {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.control-btn {
+    background: none;
+    border: none;
+    color: var(--text-color);
+    cursor: pointer;
+    font-size: 1.2rem;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.control-btn:hover {
+    opacity: 1;
+}
+
+.play-pause {
+    font-size: 2rem;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    color: black;
+    border-radius: 50%;
+}
+
+.progress-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.75rem;
+    color: #aaa;
+}
+
+input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    background: #444;
+    border-radius: 2px;
+    cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    background: white;
+    border-radius: 50%;
+    opacity: 0; 
+    transition: opacity 0.2s;
+}
+
+.progress-container:hover input[type="range"]::-webkit-slider-thumb {
+    opacity: 1;
+}
+
+.volume-controls {
+    width: 30%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+}
+
+.volume-controls input {
+    width: 100px;
+}

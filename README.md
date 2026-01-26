@@ -1,50 +1,34 @@
-# Music-Player
+# Web Music Player (Static)
 
-Music Player
+A modern, glassmorphism-styled music player that runs entirely in the browser. Hosted on GitHub Pages.
 
-Step 1: Install Required Libraries
+## How to use
 
-First, install the necessary Python libraries:
---> pip install PyQt6 pygame
-PyQt6 → For the graphical user interface
-pygame → For playing audio
+1. **Add Music**: Put your `.mp3` or `.mp4` files in this main folder.
+2. **Update Playlist**: Run the generation script to update `songs.json`:
 
-pip install opencv-python
-pip install opencv-python-headless
+   ```bash
+   python generate_songs.py
+   ```
 
-Step 2: Create the Project Structure
+3. **Open Player**: Open `index.html` in your browser.
 
-Step 3: Create the GUI Using PyQt
+## Deployment (GitHub Pages)
 
-Step 4: Add Functionality to Play Music
+1. Push this code to your GitHub repository.
+2. Go to **Settings** -> **Pages**.
+3. Select `main` branch and `/` (root) folder.
+4. Save. Your player will be live!
 
-Step 5: Run the Application
+## Features
 
-Next Steps (Improvements)
-🎵 Add a Stop button🎵 Display music duration & progress bar🎵 Create a playlist feature🎵 Design a modern UI with PyQt stylesheets
+- 🎵 Plays MP3/MP4 files directly.
+- 🎨 Glassmorphism UI (Dark Mode).
+- 📂 No backend required (Static JSON).
 
-music_player/
-│── main.py  (Main application file)
-│── ui.py  (For managing UI design)
-│── assets/  (Folder for icons, images, etc.)
-│── music/  (Folder to store your music files)
+## Credits
 
-# ADDED NO COPYRIGHT SONGS IN THE FILES SO YOU DONT HAVE TO DOWNLOAD SONGS
-
-## Music Credits  
-
-- [Sky High] by [Elektronomia]  
-- Provided by NoCopyrightSounds  
-- [https://www.youtube.com/watch?v=TW9d8vYrVFQ]  
-
-## Music Credits  
-
-- [High] by [JPB]  
-- Provided by NoCopyrightSounds  
-- [https://www.youtube.com/watch?v=Tv6WImqSuxA]  
-
-## Music Credits  
-
-- [Dreams pt. II (feat. Sara Skinner)] by [Lost Sky]  
-- Provided by NoCopyrightSounds  
-- [https://www.youtube.com/watch?v=L7kF4MXXCoA]  
+- **Music**: NoCopyrightSounds (NCS)
+  - Sky High by Elektronomia
+  - High by JPB
+  - Dreams pt. II by Lost Sky  

@@ -24,7 +24,7 @@ function formatTime(seconds) {
 // Fetch Songs
 async function fetchSongs() {
     try {
-        const response = await fetch('/api/songs');
+        const response = await fetch('songs.json');
         songs = await response.json();
         renderSongList();
         if (songs.length > 0) {

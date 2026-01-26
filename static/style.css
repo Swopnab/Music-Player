@@ -270,7 +270,7 @@ input[type="range"] {
     /* Default gray track */
     border-radius: 9999px;
     cursor: pointer;
-    overflow: hidden;
+    /* overflow: hidden; */
     /* Keeps the fill inside */
     /* Dynamic fill logic handled in JS via background-image */
     background-image: linear-gradient(#3b82f6, #3b82f6);

@@ -55,9 +55,16 @@
                 </div>
             </div>
 
-            <div class="volume-controls">
-                <i class="fa-solid fa-volume-high"></i>
-                <input type="range" id="volumeBar" value="100" min="0" max="100">
+            <div class="volume-container">
+                <div class="volume-header">
+                    <label>Volume</label>
+                    <span id="volumeValue" class="volume-value">100</span>
+                </div>
+                <div class="volume-slider-wrapper">
+                    <i class="fa-solid fa-volume-xmark volume-icon"></i>
+                    <input type="range" id="volumeBar" value="100" min="0" max="100" aria-label="Volume slider">
+                    <i class="fa-solid fa-volume-high volume-icon"></i>
+                </div>
             </div>
         </footer>
 

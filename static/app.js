@@ -131,8 +131,13 @@ progressBar.addEventListener('input', () => {
 });
 
 // Volume Control
+const volumeValueEl = document.getElementById('volumeValue');
 volumeBar.addEventListener('input', (e) => {
-    audioPlayer.volume = e.target.value / 100;
+    const value = e.target.value;
+    audioPlayer.volume = value / 100;
+    if (volumeValueEl) {
+        volumeValueEl.textContent = value;
+    }
 });
 
 // Init

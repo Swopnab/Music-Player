@@ -110,14 +110,22 @@ function prevSong() {
 nextBtn.addEventListener('click', nextSong);
 prevBtn.addEventListener('click', prevSong);
 
+// Update slider background fill
+function updateSliderFill(slider) {
+    if (!slider) return;
+    const val = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+    slider.style.backgroundSize = `${val}% 100%`;
+}
+
 // Audio Events
 audioPlayer.addEventListener('timeupdate', (e) => {
     const { duration, currentTime } = e.srcElement;
-    const progressPercent = (currentTime / duration) * 100;
-    progressBar.value = progressPercent;
-
-    currentTimeEl.textContent = formatTime(currentTime);
     if (duration) {
+        const progressPercent = (currentTime / duration) * 100;
+        progressBar.value = progressPercent;
+        updateSliderFill(progressBar); // Update visual fill
+
+        currentTimeEl.textContent = formatTime(currentTime);
         durationEl.textContent = formatTime(duration);
     }
 });
@@ -127,7 +135,10 @@ audioPlayer.addEventListener('ended', nextSong);
 // Progress Bar Click
 progressBar.addEventListener('input', () => {
     const duration = audioPlayer.duration;
-    audioPlayer.currentTime = (progressBar.value * duration) / 100;
+    if (duration) {
+        audioPlayer.currentTime = (progressBar.value * duration) / 100;
+    }
+    updateSliderFill(progressBar);
 });
 
 // Volume Control
@@ -138,7 +149,11 @@ volumeBar.addEventListener('input', (e) => {
     if (volumeValueEl) {
         volumeValueEl.textContent = value;
     }
+    updateSliderFill(volumeBar);
 });
+
+// Initial fill for volume
+updateSliderFill(volumeBar);
 
 // Init
 fetchSongs();

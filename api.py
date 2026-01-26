@@ -2,7 +2,7 @@ from flask import Flask, jsonify, send_from_directory, abort, render_template
 from flask_cors import CORS
 import os
 
-app = Flask(__name__, static_folder='static', template_folder='templates')
+app = Flask(__name__, static_folder='static', template_folder='.')
 CORS(app)  # Enable CORS for all routes
 
 MUSIC_DIR = os.path.dirname(os.path.abspath(__file__))

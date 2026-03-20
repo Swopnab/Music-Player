@@ -117,14 +117,20 @@ function updateSliderFill(slider) {
     slider.style.backgroundSize = `${val}% 100%`;
 }
 
+// Track whether user is dragging the progress bar
+let isSeeking = false;
+
+progressBar.addEventListener('mousedown',  () => { isSeeking = true; });
+progressBar.addEventListener('touchstart', () => { isSeeking = true; }, { passive: true });
+
 // Audio Events
 audioPlayer.addEventListener('timeupdate', (e) => {
+    if (isSeeking) return; // Don't fight the user while they're dragging
     const { duration, currentTime } = e.srcElement;
     if (duration) {
         const progressPercent = (currentTime / duration) * 100;
         progressBar.value = progressPercent;
-        updateSliderFill(progressBar); // Update visual fill
-
+        updateSliderFill(progressBar);
         currentTimeEl.textContent = formatTime(currentTime);
         durationEl.textContent = formatTime(duration);
     }
@@ -132,14 +138,27 @@ audioPlayer.addEventListener('timeupdate', (e) => {
 
 audioPlayer.addEventListener('ended', nextSong);
 
-// Progress Bar Click
+// Progress Bar seek
 progressBar.addEventListener('input', () => {
     const duration = audioPlayer.duration;
     if (duration) {
-        audioPlayer.currentTime = (progressBar.value * duration) / 100;
+        // Update the time display live as the user scrubs
+        currentTimeEl.textContent = formatTime((progressBar.value / 100) * duration);
     }
     updateSliderFill(progressBar);
 });
+
+progressBar.addEventListener('change', () => {
+    // Fired on mouseup / touchend — commit the seek
+    const duration = audioPlayer.duration;
+    if (duration) {
+        audioPlayer.currentTime = (progressBar.value / 100) * duration;
+    }
+    isSeeking = false;
+});
+
+progressBar.addEventListener('mouseup',  () => { isSeeking = false; });
+progressBar.addEventListener('touchend', () => { isSeeking = false; });
 
 // Volume Control
 const volumeValueEl = document.getElementById('volumeValue');

@@ -1,6 +1,8 @@
-from flask import Flask, jsonify, send_from_directory, abort, render_template
+from flask import Flask, jsonify, send_from_directory, abort, render_template, url_for
 from flask_cors import CORS
 import os
+from pathlib import Path
+from generate_songs import metadata_for_file, EXTENSIONS
 
 app = Flask(__name__, static_folder='static', template_folder='.')
 CORS(app)  # Enable CORS for all routes
@@ -12,7 +14,7 @@ def get_media_files():
     # Sort files alphabetically
     sorted_files = sorted(os.listdir(MUSIC_DIR))
     for file in sorted_files:
-        if file.lower().endswith(('.mp3', '.mp4')):
+        if Path(file).suffix.lower() in EXTENSIONS:
             files.append(file)
     return files
 
@@ -20,22 +22,19 @@ def get_media_files():
 def index():
     return render_template('index.html')
 
+@app.route('/songs.json', methods=['GET'])
 @app.route('/api/songs', methods=['GET'])
 def list_songs():
-    files = get_media_files()
     songs = []
-    for f in files:
-        songs.append({
-            "filename": f,
-            "title": f.replace('.mp3', '').replace('.mp4', ''),
-            "url": f"/api/stream/{f}",
-            "type": "video" if f.lower().endswith(".mp4") else "audio"
-        })
+    for filename in get_media_files():
+        song = metadata_for_file(Path(filename))
+        song['url'] = url_for('stream_music', filename=filename)
+        songs.append(song)
     return jsonify(songs)
 
 @app.route('/api/stream/<path:filename>')
 def stream_music(filename):
-    if not filename.lower().endswith(('.mp3', '.mp4')):
+    if Path(filename).suffix.lower() not in EXTENSIONS:
         abort(400)
     
     if not os.path.exists(os.path.join(MUSIC_DIR, filename)):

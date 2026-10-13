@@ -1,34 +1,100 @@
-# Web Music Player (Static)
+# Music Player
 
-A modern, glassmorphism-styled music player that runs entirely in the browser. Hosted on GitHub Pages.
+**Your music, your mix.** A responsive music player with a file library, playlists, a playback queue, and live internet radio. It runs directly on GitHub Pages—no account, backend, API key, or paid service is required.
 
-## How to use
+[Open the player](https://swopnab.github.io/Music-Player/)
 
-1. **Add Music**: Put your `.mp3` or `.mp4` files in this main folder.
-2. **Update Playlist**: Run the generation script to update `songs.json`:
+## Listen
 
-   ```bash
-   python generate_songs.py
-   ```
+- Play the bundled collection or choose **Add your music** to import audio from your device. Drag and drop works on desktop.
+- Imported files are saved in this browser's IndexedDB. They are never uploaded to a server. Clearing site data removes them; another browser/device has its own library. If storage is unavailable/full, imports still play for the current session.
+- Use the heart to save favorites, **+** to add a track/station to the queue, or the playlist icon to create a mix.
+- Browse popular music radio stations, choose a genre or country, or search for a station by name. Favorites can include both songs and stations.
+- Playback continues when changing views or searching. The queue has its own order, separate from search results.
+- Use shuffle, repeat all, repeat one, seeking, mute, and volume controls. Repeat off stops at the end of a song list; manually skipping next wraps to the first track.
+- On phones/tablets the player controls stay visible and the queue opens in a drawer. Saved playlists are also available from **Your library**.
+- Keyboard: **Space** plays/pauses, **Left/Right** changes tracks, **M** mutes. Shortcuts leave text inputs, sliders, and buttons alone. Supported browsers also expose playback through the operating system's Media Session controls.
 
-3. **Open Player**: Open `index.html` in your browser.
+Live radio is a broadcast, so it has no song-level seeking, track titles, or on-demand song selection. Stations control their own availability and may be blocked by a region, browser codec support, or the station server. The app filters out insecure HTTP streams and HLS playlists for broader native browser compatibility, reports playback failures, and keeps your local library usable if radio discovery is offline. It does not provide an unrestricted commercial music catalog.
 
-## Deployment (GitHub Pages)
+Volume is controlled by the device on some mobile browsers. Use your device's volume buttons when a browser does not honor the software slider.
 
-1. Push this code to your GitHub repository.
-2. Go to **Settings** -> **Pages**.
-3. Select `main` branch and `/` (root) folder.
-4. Save. Your player will be live!
+## Free API integration
 
-## Features
+This project uses **Radio Browser**, selected from [Swopnab/public-apis → Music](https://github.com/Swopnab/public-apis#music).
 
-- 🎵 Plays MP3/MP4 files directly.
-- 🎨 Glassmorphism UI (Dark Mode).
-- 📂 No backend required (Static JSON).
+- [API overview](https://api.radio-browser.info/) and [API reference](https://docs.radio-browser.info/)
+- Discovers available mirrors using `/json/servers`, randomizes them, and retries a different host on failure.
+- Searches `/json/stations/search` with music/genre, country, name, pagination, HTTPS, and healthy-station filters.
+- Records station plays using the directory's `/json/url/{stationuuid}` endpoint after playback starts. A counting failure never blocks playback.
+- No API key or streaming subscription is required. Third-party station names, artwork, and streams remain supplied by their owners.
+
+Favorites, playlists, volume, and playback modes use local browser storage. The app never uploads imported music. Radio searches and listens connect to the directory/station servers; station artwork may load from a third-party site.
+
+## Run locally
+
+From this repository, start a static server:
+
+```sh
+python3 -m http.server 8080
+```
+
+Open `http://localhost:8080`. Opening the HTML directly as a `file://` URL cannot load the catalog and JavaScript modules reliably.
+
+To add bundled music for everyone using the site, place supported files in the repository root and regenerate the catalog:
+
+```sh
+python3 generate_songs.py
+```
+
+The generator runs relative to its own location, encodes filenames safely, supplies readable NCS metadata, and retains curated artist/album/duration/credit fields. Browser imports support MP3, M4A/AAC, WAV, OGG/Opus, FLAC, and audio from MP4/WebM when supported by the browser.
+
+## Check the player
+
+Pure playback/normalization checks need only Node.js:
+
+```sh
+npm test
+```
+
+Browser regression checks use free, development-only Playwright:
+
+```sh
+npm install --no-save playwright
+npx playwright install chromium
+npm run test:browser
+```
+
+The browser suite plays real bundled audio and an imported WAV fixture. It checks seeking, volume/mute, stored favorites/playlists/imports, radio search/genres/country/pagination, queue isolation, mobile touch controls, mirror failover, blocked storage, and rejected playback. API responses are deterministic fixtures; test live station availability separately. Set `MUSIC_PLAYER_SCREENSHOTS` to a directory outside the repo to save screenshots.
+
+The optional Python server can also be checked using the existing requirements:
+
+```sh
+python3 -m pip install -r requirements.txt
+python3 -m unittest discover -s tests -p 'test_*.py'
+```
+
+## Deploy
+
+Push changes to `main`. The existing GitHub Actions workflow publishes the static files to GitHub Pages. No npm build or Python service is needed for deployment.
+
+## Project layout
+
+- `index.html`, `static/style.css` — responsive interface and controls
+- `static/app.js` — library, playback, queue, favorites, playlists, and importing
+- `static/core.js` — tested queue rules, time formatting, and source normalization
+- `static/radio.js` — Radio Browser discovery/search and retries
+- `static/library.js` — browser-local file storage
+- `songs.json`, `generate_songs.py` — bundled file catalog
+- `tests/` — Node and browser regression checks
+- `api.py`, `ui.py`, `index.py` — earlier Python server/desktop implementations, retained separately from the GitHub Pages player
 
 ## Credits
 
-- **Music**: NoCopyrightSounds (NCS)
-  - Sky High by Elektronomia
-  - High by JPB
-  - Dreams pt. II by Lost Sky  
+The bundled collection was provided by the original repository:
+
+- NoCopyrightSounds — **Sky High** by Elektronomia
+- NoCopyrightSounds — **High** by JPB
+- NoCopyrightSounds — **Dreams pt. II (feat. Sara Skinner)** by Lost Sky
+
+Keep the artists' required attribution and verify permission before adding or distributing more music. Imported files stay on the importing device and are not added to the public repository.

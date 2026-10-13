@@ -1,26 +1,38 @@
 [
-    {
-        "filename": "NCS - Copyright Free Music Elektronomia - Sky High  Progressive House.mp3",
-        "title": "NCS - Copyright Free Music Elektronomia - Sky High  Progressive House",
-        "url": "NCS - Copyright Free Music Elektronomia - Sky High  Progressive House.mp3",
-        "type": "audio"
-    },
-    {
-        "filename": "NCS - Copyright Free Music JPB - High  Trap.mp3",
-        "title": "NCS - Copyright Free Music JPB - High  Trap",
-        "url": "NCS - Copyright Free Music JPB - High  Trap.mp3",
-        "type": "audio"
-    },
-    {
-        "filename": "NCS - Copyright Free Music Lost Sky - Dreams pt. II (feat. Sara Skinner)  Trap.mp3",
-        "title": "NCS - Copyright Free Music Lost Sky - Dreams pt. II (feat. Sara Skinner)  Trap",
-        "url": "NCS - Copyright Free Music Lost Sky - Dreams pt. II (feat. Sara Skinner)  Trap.mp3",
-        "type": "audio"
-    },
-    {
-        "filename": "videoplayback.mp4",
-        "title": "videoplayback",
-        "url": "videoplayback.mp4",
-        "type": "video"
-    }
+  {
+    "filename": "NCS - Copyright Free Music Elektronomia - Sky High  Progressive House.mp3",
+    "title": "Sky High",
+    "artist": "Elektronomia",
+    "album": "NCS collection",
+    "url": "NCS%20-%20Copyright%20Free%20Music%20Elektronomia%20-%20Sky%20High%20%20Progressive%20House.mp3",
+    "type": "audio",
+    "credit": "Music provided by NoCopyrightSounds. See README for artist credits."
+  },
+  {
+    "filename": "NCS - Copyright Free Music JPB - High  Trap.mp3",
+    "title": "High",
+    "artist": "JPB",
+    "album": "NCS collection",
+    "url": "NCS%20-%20Copyright%20Free%20Music%20JPB%20-%20High%20%20Trap.mp3",
+    "type": "audio",
+    "credit": "Music provided by NoCopyrightSounds. See README for artist credits."
+  },
+  {
+    "filename": "NCS - Copyright Free Music Lost Sky - Dreams pt. II (feat. Sara Skinner)  Trap.mp3",
+    "title": "Dreams pt. II (feat. Sara Skinner)",
+    "artist": "Lost Sky",
+    "album": "NCS collection",
+    "url": "NCS%20-%20Copyright%20Free%20Music%20Lost%20Sky%20-%20Dreams%20pt.%20II%20%28feat.%20Sara%20Skinner%29%20%20Trap.mp3",
+    "type": "audio",
+    "credit": "Music provided by NoCopyrightSounds. See README for artist credits."
+  },
+  {
+    "filename": "videoplayback.mp4",
+    "title": "videoplayback",
+    "artist": "Local collection",
+    "album": "Your collection",
+    "url": "videoplayback.mp4",
+    "type": "video",
+    "credit": ""
+  }
 ]

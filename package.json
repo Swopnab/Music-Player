@@ -1,0 +1,10 @@
+{
+  "name": "music-player",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/core.test.js",
+    "test:browser": "node tests/browser.cjs"
+  }
+}

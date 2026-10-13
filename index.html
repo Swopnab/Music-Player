@@ -7,7 +7,7 @@
     <meta name="description" content="Your music, your mix. Play your own files, build playlists, and discover live radio from around the world.">
     <title>Music Player · Your daily soundtrack</title>
     <link rel="icon" href="static/artwork/mark.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="static/style.css?v=5">
+    <link rel="stylesheet" href="static/style.css?v=6">
 </head>
 <body>
     <a class="skip-link" href="#main">Skip to music</a>
@@ -56,7 +56,7 @@
                     <div class="radio-bottom"><a href="https://www.radio-browser.info/" target="_blank" rel="noopener noreferrer">Stations by Radio Browser ↗</a><button id="moreRadioBtn" class="text-button" hidden>Load more stations ↓</button><button id="retryRadioBtn" class="text-button" hidden>Try again ↻</button></div>
                 </section>
             </section>
-            <section id="libraryView" class="view" hidden><div class="view-heading"><p class="eyebrow">MAKE IT YOURS</p><h1 id="listHeading">Your library</h1><p id="listDescription">Your music, always within reach.</p></div><div class="list-toolbar"><button id="playListBtn" class="button primary"><svg><use href="static/icons.svg#play"/></svg>Play all</button><span id="listCount"></span><button id="deletePlaylistBtn" class="text-button" hidden>Delete playlist</button></div><div class="track-table-labels"><span>#</span><span>TRACK</span><span>COLLECTION</span><span>TIME</span></div><div id="trackList" class="track-list"></div><div id="emptyState" class="empty-state" hidden><svg><use href="static/icons.svg#music"/></svg><h2 id="emptyTitle">Nothing here yet</h2><p id="emptyDescription">Add a few favorites to make this space your own.</p></div></section>
+            <section id="libraryView" class="view" hidden><div class="view-heading"><p class="eyebrow">MAKE IT YOURS</p><h1 id="listHeading">Your library</h1><p id="listDescription">Your music, always within reach.</p></div><div id="libraryDiscRoot"></div><div class="list-toolbar"><button id="playListBtn" class="button primary"><svg><use href="static/icons.svg#play"/></svg>Play all</button><span id="listCount"></span><button id="deletePlaylistBtn" class="text-button" hidden>Delete playlist</button></div><div class="track-table-labels"><span>#</span><span>TRACK</span><span>COLLECTION</span><span>TIME</span></div><div id="trackList" class="track-list"></div><div id="emptyState" class="empty-state" hidden><svg><use href="static/icons.svg#music"/></svg><h2 id="emptyTitle">Nothing here yet</h2><p id="emptyDescription">Add a few favorites to make this space your own.</p></div></section>
             <footer class="main-footer">A space for your music. <span>Space: play / pause · ← →: skip · M: mute</span></footer>
         </main>
 
@@ -72,7 +72,7 @@
         </aside>
 
         <footer class="player-bar" aria-label="Playback controls">
-            <div class="player-track"><div id="miniArtwork" class="artwork cover-0 mini-art" aria-hidden="true"><svg><use href="static/icons.svg#music"/></svg></div><div class="player-track-text"><strong id="playerTitle">Nothing playing yet</strong><span id="playerArtist">Find your next favorite</span></div><button id="playerFavoriteBtn" class="icon-button" aria-label="Add current track to favorites" aria-pressed="false" disabled><svg><use href="static/icons.svg#heart"/></svg></button></div>
+            <div class="player-track"><button id="openPlayerBtn" class="player-open" type="button" aria-label="Open expanded player" aria-haspopup="dialog" aria-controls="playerDialog" title="Open expanded player"><div id="miniArtwork" class="artwork cover-0 mini-art" aria-hidden="true"><svg><use href="static/icons.svg#music"/></svg></div><div class="player-track-text"><strong id="playerTitle">Nothing playing yet</strong><span id="playerArtist">Find your next favorite</span></div><span class="player-expand" aria-hidden="true">↗</span></button><button id="playerFavoriteBtn" class="icon-button" aria-label="Add current track to favorites" aria-pressed="false" disabled><svg><use href="static/icons.svg#heart"/></svg></button></div>
             <div class="transport"><div class="transport-buttons"><button id="shuffleBtn" class="icon-button" aria-label="Shuffle" aria-pressed="false" title="Shuffle"><svg><use href="static/icons.svg#shuffle"/></svg></button><button id="prevBtn" class="icon-button" aria-label="Previous track" title="Previous track" disabled><svg><use href="static/icons.svg#previous"/></svg></button><button id="playBtn" class="play-button" aria-label="Play" disabled><svg><use href="static/icons.svg#play"/></svg></button><button id="nextBtn" class="icon-button" aria-label="Next track" title="Next track" disabled><svg><use href="static/icons.svg#next"/></svg></button><button id="repeatBtn" class="icon-button" aria-label="Repeat off" aria-pressed="false" title="Repeat off"><svg><use href="static/icons.svg#repeat"/></svg></button></div><div class="progress-container"><span id="currentTime">0:00</span><input id="progressBar" type="range" min="0" max="100" step="0.1" value="0" aria-label="Seek in track" disabled><span id="duration">0:00</span></div></div>
             <div class="player-extras"><button id="queueBtn" class="icon-button" aria-label="Show queue" title="Show queue"><svg><use href="static/icons.svg#queue"/></svg></button><button id="muteBtn" class="icon-button" aria-label="Mute" aria-pressed="false"><svg><use href="static/icons.svg#volume"/></svg></button><input id="volumeBar" type="range" min="0" max="100" value="80" aria-label="Volume"><span id="volumeValue" class="sr-only">80%</span></div>
         </footer>
@@ -82,6 +82,10 @@
     <input id="fileInput" type="file" accept="audio/*,video/mp4,.mp3,.m4a,.wav,.ogg,.flac,.mp4" multiple hidden>
     <audio id="audioPlayer" preload="metadata"></audio>
     <dialog id="playlistDialog"><form id="playlistForm"><div class="panel-heading"><h2 id="playlistDialogTitle">Create a playlist</h2><button type="button" id="closePlaylistDialog" class="icon-button" aria-label="Close"><svg><use href="static/icons.svg#close"/></svg></button></div><label id="playlistSelectLabel">Playlist<select id="playlistSelect"><option value="new">Create new playlist</option></select></label><label id="playlistNameLabel">Name<input id="playlistName" type="text" maxlength="60" placeholder="e.g. Late night favorites" autocomplete="off"></label><p id="playlistDialogStatus" class="inline-status" role="status"></p><button type="submit" class="button primary">Save playlist</button></form></dialog>
-    <script type="module" src="static/app.js?v=5"></script>
+    <dialog id="playerDialog" class="expanded-player" aria-labelledby="expandedPlayerHeading">
+        <div class="expanded-player-header"><div><p class="eyebrow">A CLOSER LISTEN</p><h1 id="expandedPlayerHeading">Now playing</h1></div><button id="closePlayerBtn" class="icon-button" aria-label="Close expanded player" autofocus><svg><use href="static/icons.svg#close"/></svg></button></div>
+        <div id="popupDiscRoot"></div>
+    </dialog>
+    <script type="module" src="static/app.js?v=6"></script>
 </body>
 </html>

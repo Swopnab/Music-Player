@@ -12,6 +12,8 @@
 - Browse popular music radio stations, choose a genre or country, or search for a station by name. Favorites can include both songs and stations.
 - Playback continues when changing views or searching. The queue has its own order, separate from search results.
 - Use shuffle, repeat all, repeat one, seeking, mute, and volume controls. Repeat off stops at the end of a song list; manually skipping next wraps to the first track.
+- Open **Your library** to browse the supplied disc carousel. Drag/swipe horizontally, use the arrows or **Tracks** menu, then click the selected disc or **Play selected track**. Browsing does not interrupt the current song; the regular track list stays below the carousel. Favorites and playlists use the same record view.
+- Click/tap the artwork or title in the bottom player bar to open the expanded player. Its carousel browses the current queue, and its transport, favorites, seeking, and volume share the existing audio player. Opening/closing it keeps the song playing; close with **×**, **Escape**, or a click outside the popup.
 - On phones/tablets the player controls stay visible and the queue opens in a drawer. Saved playlists are also available from **Your library**.
 - Keyboard: **Space** plays/pauses, **Left/Right** changes tracks, **M** mutes. Shortcuts leave text inputs, sliders, and buttons alone. Supported browsers also expose playback through the operating system's Media Session controls.
 
@@ -65,7 +67,7 @@ npx playwright install chromium
 npm run test:browser
 ```
 
-The browser suite plays real bundled audio and an imported WAV fixture. It checks seeking, volume/mute, stored favorites/playlists/imports, radio search/genres/country/pagination, queue isolation, mobile touch controls, mirror failover, blocked storage, and rejected playback. API responses are deterministic fixtures; test live station availability separately. Set `MUSIC_PLAYER_SCREENSHOTS` to a directory outside the repo to save screenshots.
+The browser suite also checks carousel browsing/playback, popup audio continuity, synchronized transport/favorites/seeking, modal dismissal and focus restoration at seven viewport sizes. It plays real bundled audio and an imported WAV fixture. It checks seeking, volume/mute, stored favorites/playlists/imports, radio search/genres/country/pagination, queue isolation, mobile touch controls, mirror failover, blocked storage, and rejected playback. API responses are deterministic fixtures; test live station availability separately. Set `MUSIC_PLAYER_SCREENSHOTS` to a directory outside the repo to save screenshots.
 
 The optional Python server can also be checked using the existing requirements:
 
@@ -76,12 +78,26 @@ python3 -m unittest discover -s tests -p 'test_*.py'
 
 ## Deploy
 
-Push changes to `main`. The existing GitHub Actions workflow publishes the static files to GitHub Pages. No npm build or Python service is needed for deployment.
+Push changes to `main`. GitHub Actions installs the locked free build dependencies, checks TypeScript and the queue tests, bundles the UI, and publishes only the player assets and catalog media to GitHub Pages. No Python service or paid hosting is needed.
+
+The supplied React component lives at `components/ui/disc-cascade-carousel.tsx`; `components/music-discs.tsx` connects it to the existing player. Its own scoped CSS means Tailwind/shadcn are not required by this component. TypeScript is configured in `tsconfig.json`. React is bundled locally into `static/disc-ui.js`, so visitors do not depend on a React/font/image CDN. Disc labels use generated SVG artwork and real track metadata rather than demo records.
+
+After editing the TSX sources:
+
+```sh
+npm ci
+npm run typecheck
+npm run build
+```
+
+The generated bundle and license notice are committed so the existing static-server and Flask workflows keep working. `npm run build:site` produces the same `dist-site/` output used by Pages.
 
 ## Project layout
 
 - `index.html`, `static/style.css` — responsive interface and controls
 - `static/app.js` — library, playback, queue, favorites, playlists, and importing
+- `components/ui/disc-cascade-carousel.tsx`, `components/music-discs.tsx` — supplied record UI and player integration
+- `scripts/` — local UI build and static publishing preparation
 - `static/core.js` — tested queue rules, time formatting, and source normalization
 - `static/radio.js` — Radio Browser discovery/search and retries
 - `static/library.js` — browser-local file storage

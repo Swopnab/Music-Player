@@ -1,4 +1,4 @@
-// Browser checks use development-only Playwright. The app itself has no npm dependencies.
+// Browser checks use development-only Playwright; the carousel runtime is bundled locally.
 const assert = require('node:assert/strict');
 const http = require('node:http');
 const fs = require('node:fs/promises');
@@ -162,6 +162,72 @@ function wavFixture() {
             await page.waitForFunction(()=>document.getElementById('playerTitle').textContent==='Sky High');
             if(width<=1250) {await page.locator('#closeQueueBtn').tap();assert(!await page.locator('#nowPlayingPanel').isVisible());}
             await page.locator('.nav-item[data-view="library"]').tap();assert.equal(await page.locator('.track-row').count(),4);
+            const libraryCarousel = page.locator('#libraryDiscRoot .dcc-root');
+            await libraryCarousel.waitFor();
+            if(width===1440) {
+                await libraryCarousel.focus();await libraryCarousel.press('ArrowRight');
+                await page.waitForFunction(()=>document.querySelector('.disc-selection strong')?.textContent==='High');
+                assert.equal(await page.locator('#playerTitle').textContent(),'Sky High');
+                await libraryCarousel.press('ArrowLeft');
+                await page.waitForFunction(()=>document.querySelector('.disc-selection strong')?.textContent==='Sky High');
+                const box=await libraryCarousel.boundingBox();
+                const x=box.x+box.width/2,y=box.y+box.height*0.6;
+                await page.mouse.move(x,y);await page.mouse.down();await page.mouse.move(x-220,y,{steps:15});await page.mouse.up();
+                await page.waitForFunction(()=>document.querySelector('.disc-selection strong')?.textContent!=='Sky High');
+                assert.equal(await page.locator('#playerTitle').textContent(),'Sky High');
+                await libraryCarousel.locator('.dcc-menubtn').click();
+                await libraryCarousel.locator('.dcc-opt').filter({hasText:'Sky High'}).click();
+                await page.waitForFunction(()=>document.querySelector('.disc-selection strong')?.textContent==='Sky High');
+            }
+            // Carousel navigation changes the preview, not the current playback track.
+            await libraryCarousel.locator('button[aria-label="Next track"]').tap();
+            await page.waitForFunction(()=>document.querySelector('.disc-selection strong')?.textContent==='High');
+            assert.equal(await page.locator('#playerTitle').textContent(),'Sky High');
+            await page.locator('.disc-selection button').tap();
+            await page.waitForFunction(()=>document.getElementById('playerTitle').textContent==='High' && document.getElementById('audioPlayer').currentTime>0.1);
+            await snapshot(page,`${width}x${height}-library-discs`);
+            // Opening and closing the expanded player must never reload its shared audio.
+            await page.evaluate(()=>{window.popupAudioLoads=0;document.getElementById('audioPlayer').addEventListener('loadstart',()=>window.popupAudioLoads++);});
+            await page.locator('#openPlayerBtn').tap();
+            await page.locator('#playerDialog .dcc-root').waitFor();
+            await fits(page,'#playerDialog',width,height);
+            assert.equal(await page.locator('audio').count(),1);
+            assert.equal(await page.evaluate(()=>window.popupAudioLoads),0);
+            if(width===390) {
+                await page.setViewportSize({width:844,height:390});await fits(page,'#playerDialog',844,390);
+                assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+                assert.equal(await page.evaluate(()=>window.popupAudioLoads),0);
+                await page.setViewportSize({width,height});await fits(page,'#playerDialog',width,height);
+            }
+            if(width===1440) {
+                for(let i=0;i<16;i++) {await page.keyboard.press('Tab');assert(await page.locator('#playerDialog').evaluate(dialog=>dialog.contains(document.activeElement)));}
+            }
+            await snapshot(page,`${width}x${height}-player-popup`);
+            await page.locator('button[aria-label="Popup pause"]').tap();
+            assert(await page.locator('#audioPlayer').evaluate(audio=>audio.paused));
+            await page.locator('button[aria-label="Popup play"]').tap();
+            await page.waitForFunction(()=>!document.getElementById('audioPlayer').paused);
+            await page.locator('button[aria-label="Popup next track"]').tap();
+            await page.waitForFunction(()=>document.getElementById('playerTitle').textContent==='Dreams pt. II (feat. Sara Skinner)');
+            await page.waitForFunction(()=>document.querySelector('#playerDialog .dcc-slide[data-active]')?.getAttribute('aria-label')?.includes('Dreams pt. II'));
+            await page.locator('button[aria-label="Popup shuffle"]').tap();assert.equal(await page.locator('#shuffleBtn').getAttribute('aria-pressed'),'true');
+            await page.locator('button[aria-label="Popup shuffle"]').tap();
+            await page.locator('button[aria-label="Favorite current track"]').tap();assert.equal(await page.locator('#playerFavoriteBtn').getAttribute('aria-pressed'),'true');
+            const popupSeek=page.locator('input[aria-label="Popup seek in track"]');
+            await popupSeek.focus();await popupSeek.press('Home');await popupSeek.press('ArrowRight');
+            const popupPosition=await page.locator('#audioPlayer').evaluate(audio=>audio.currentTime/audio.duration*100);
+            assert(popupPosition>=0.08 && popupPosition<1, 'Popup keyboard seeking commits to the shared audio');
+            // The index menu consumes its first Escape; a second Escape closes the modal.
+            if(await page.locator('#playerDialog .dcc-menubtn').isVisible()) {
+                await page.locator('#playerDialog .dcc-menubtn').tap();await page.keyboard.press('Escape');
+                assert(await page.locator('#playerDialog').evaluate(dialog=>dialog.open));
+            }
+            await page.keyboard.press('Escape');assert(!await page.locator('#playerDialog').evaluate(dialog=>dialog.open));
+            if(width===1440) {
+                await page.locator('#openPlayerBtn').click();await page.locator('#playerDialog .dcc-root').waitFor();
+                await page.mouse.click(2,2);assert(!await page.locator('#playerDialog').evaluate(dialog=>dialog.open));
+            }
+            assert.equal(await page.evaluate(()=>document.activeElement.id),'openPlayerBtn');
             await page.locator('.nav-item[data-view="home"]').tap(); await snapshot(page,`${width}x${height}-home`);
             await page.locator('#browseRadioBtn').tap(); await snapshot(page,`${width}x${height}-radio`);
             assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert.deepEqual(errors,[]);

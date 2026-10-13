@@ -1,3 +1,4 @@
+import {mountDiscUI} from './disc-ui.js';
 import {PlaybackQueue, formatTime, matchesTrack, normalizeSong, safeHttpsUrl} from './core.js';
 import {searchStations, recordStationClick} from './radio.js';
 import {getImportedTracks, saveImportedTrack, deleteImportedTrack} from './library.js';
@@ -5,6 +6,7 @@ import {getImportedTracks, saveImportedTrack, deleteImportedTrack} from './libra
 const $ = id => document.getElementById(id);
 const audio = $('audioPlayer');
 const queue = new PlaybackQueue();
+let discUI;
 const knownTracks = new Map();
 let radioClickRecorded = false;
 let library = [], stations = [], view = 'home', playlistId = '', query = '', radioTag = '', radioOffset = 0;
@@ -60,7 +62,7 @@ function notify(message) {
     $('toast').textContent = message; $('toast').hidden = false;
     clearTimeout(toastTimer); toastTimer = setTimeout(() => { $('toast').hidden = true; }, 4200);
 }
-function playbackStatus(message = '') { $('playerStatus').textContent = message; $('playerStatus').hidden = !message; }
+function playbackStatus(message = '') { $('playerStatus').textContent = message; $('playerStatus').hidden = !message; updateDiscUI(); }
 function persist() {
     const durable = track => !(track.source === 'upload' && !track.persistent);
     const compact = track => { const copy = {...track}; if (copy.source === 'upload') delete copy.url; return copy; };
@@ -181,7 +183,7 @@ function renderPlaylists() {
 }
 function render() {
     $('libraryCount').textContent = library.length; $('favoriteCount').textContent = [...favorites.keys()].filter(resolveTrack).length;
-    renderCollection(); renderTrackList(); renderPlaylists(); renderRadio(); renderQueue();
+    renderCollection(); renderTrackList(); renderPlaylists(); renderRadio(); renderQueue(); updateDiscUI();
 }
 function changeView(nextView, id = '') {
     const previousView = view;
@@ -207,6 +209,15 @@ function renderQueue() {
         $('queueList').append(row);
     });
 }
+function updateDiscUI() {
+    discUI?.update({
+        library: displayedTracks(), queue: queue.items, current: currentTrack,
+        libraryVisible: view !== 'home', popupOpen: $('playerDialog').open, paused: audio.paused,
+        shuffle: queue.shuffle, repeat: queue.repeat, favorite: !!currentTrack && favorites.has(currentTrack.id),
+        position: audio.currentTime, duration: audio.duration, volume: audio.muted ? 0 : Math.round(audio.volume * 100),
+        status: $('playerStatus').textContent
+    });
+}
 function updateNowPlaying() {
     if (!currentTrack) return;
     $('nowTitle').textContent = $('playerTitle').textContent = currentTrack.title;
@@ -219,6 +230,7 @@ function updateNowPlaying() {
     }
 }
 function updateTransport() {
+    updateDiscUI();
     $('playBtn').replaceChildren(icon(audio.paused ? 'play' : 'pause')); $('playBtn').setAttribute('aria-label', audio.paused ? 'Play' : 'Pause');
     for (const id of ['playBtn', 'prevBtn', 'nextBtn']) $(id).disabled = !currentTrack;
     if ('mediaSession' in navigator) navigator.mediaSession.playbackState = currentTrack ? audio.paused ? 'paused' : 'playing' : 'none';
@@ -257,6 +269,7 @@ function previous() {
 }
 function fillSlider(slider) { slider.style.backgroundSize = `${slider.value}% 100%`; }
 function updateProgress() {
+    updateDiscUI();
     if (seeking || !currentTrack) return;
     const seekable = currentTrack.source !== 'radio' && Number.isFinite(audio.duration) && audio.duration > 0;
     $('progressBar').disabled = !seekable;
@@ -269,6 +282,7 @@ function updateProgress() {
     }
 }
 function updateVolume() {
+    updateDiscUI();
     const volume = audio.muted ? 0 : Math.round(audio.volume * 100);
     $('volumeBar').value = volume; $('volumeValue').textContent = `${volume}%`; fillSlider($('volumeBar'));
     $('muteBtn').replaceChildren(icon(volume === 0 ? 'mute' : 'volume')); $('muteBtn').setAttribute('aria-label', volume === 0 ? 'Unmute' : 'Mute'); $('muteBtn').setAttribute('aria-pressed', String(volume === 0));
@@ -279,6 +293,7 @@ function toggleMute() {
     updateVolume(); persist();
 }
 function updateModes() {
+    updateDiscUI();
     $('shuffleBtn').setAttribute('aria-pressed', String(queue.shuffle));
     $('repeatBtn').setAttribute('aria-pressed', String(queue.repeat !== 'off'));
     $('repeatBtn').setAttribute('aria-label', 'Repeat ' + queue.repeat); $('repeatBtn').title = 'Repeat ' + queue.repeat;
@@ -428,7 +443,7 @@ $('genreFilters').addEventListener('click', event => {
 $('countryFilter').addEventListener('change', () => void loadRadio());
 $('retryRadioBtn').addEventListener('click', () => void loadRadio());
 $('moreRadioBtn').addEventListener('click', () => { if (!radioLoading) void loadRadio(true); });
-function applySearch() { query = $('searchInput').value.trim(); renderCollection(); renderTrackList(); if (view === 'home') void loadRadio(); }
+function applySearch() { query = $('searchInput').value.trim(); renderCollection(); renderTrackList(); updateDiscUI(); if (view === 'home') void loadRadio(); }
 $('searchInput').addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(applySearch, 350); });
 $('searchForm').addEventListener('submit', event => { event.preventDefault(); clearTimeout(searchTimer); applySearch(); });
 $('createPlaylistBtn').addEventListener('click', () => openPlaylistDialog());
@@ -458,7 +473,7 @@ window.addEventListener('dragleave', () => { dragDepth = Math.max(0, dragDepth -
 window.addEventListener('drop', event => { event.preventDefault(); dragDepth = 0; document.body.classList.remove('dragging'); if (event.dataTransfer.files.length) void importFiles(event.dataTransfer.files); });
 window.addEventListener('keydown', event => {
     if (event.code === 'Escape' && !$('playlistDialog').open) { setQueueOpen(false); return; }
-    if (event.target.closest('input, textarea, select, button, a') || $('playlistDialog').open) return;
+    if (event.defaultPrevented || event.target.closest('input, textarea, select, button, a, .dcc-root') || $('playlistDialog').open || $('playerDialog').open) return;
     if (event.code === 'Space' && currentTrack) { event.preventDefault(); audio.paused ? void play() : pause(); }
     else if (event.code === 'ArrowRight') { event.preventDefault(); next(); }
     else if (event.code === 'ArrowLeft') { event.preventDefault(); previous(); }
@@ -471,6 +486,27 @@ if ('mediaSession' in navigator) {
         seekforward: details => { if (currentTrack?.source !== 'radio' && Number.isFinite(audio.duration)) audio.currentTime = Math.min(audio.duration, audio.currentTime + (details.seekOffset || 10)); }};
     for (const [action, handler] of Object.entries(handlers)) try { navigator.mediaSession.setActionHandler(action, handler); } catch { /* Unsupported actions are optional. */ }
 }
+discUI = mountDiscUI($('libraryDiscRoot'), $('popupDiscRoot'), {
+    playLibrary: id => playFrom(displayedTracks(), id),
+    playQueue: id => { const index = queue.items.findIndex(track => track.id === id); if (index >= 0) loadTrack(queue.jump(index), true); },
+    togglePlay: () => audio.paused ? void play() : pause(), previous, next: () => next(),
+    shuffle: () => $('shuffleBtn').click(), repeat: () => $('repeatBtn').click(),
+    favorite: () => { if (currentTrack) toggleFavorite(currentTrack); },
+    seek: percent => { if (currentTrack?.source !== 'radio' && Number.isFinite(audio.duration) && audio.duration > 0) { audio.currentTime = Math.min(100, Math.max(0, percent)) / 100 * audio.duration; updateProgress(); } },
+    volume: percent => { audio.muted = false; audio.volume = percent / 100; if (audio.volume) previousVolume = audio.volume; updateVolume(); persist(); }
+});
+$('openPlayerBtn').addEventListener('click', () => { setQueueOpen(false); $('playerDialog').showModal(); updateDiscUI(); });
+$('closePlayerBtn').addEventListener('click', () => $('playerDialog').close());
+$('playerDialog').addEventListener('close', () => { updateDiscUI(); $('openPlayerBtn').focus(); });
+$('playerDialog').addEventListener('keydown', event => {
+    if (event.key !== 'Tab') return;
+    const controls = [...$('playerDialog').querySelectorAll('button:not([disabled]), input:not([disabled]), [tabindex="0"], a[href]')]
+        .filter(control => control.tabIndex >= 0 && control.getClientRects().length && getComputedStyle(control).visibility !== 'hidden');
+    const first = controls[0], last = controls.at(-1);
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+});
+$('playerDialog').addEventListener('click', event => { if (event.target !== $('playerDialog')) return; const bounds = $('playerDialog').getBoundingClientRect(); if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) $('playerDialog').close(); });
 updateVolume(); updateModes(); updateTransport();
 void initializeLibrary();
 void loadRadio();

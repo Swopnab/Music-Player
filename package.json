@@ -5,6 +5,19 @@
   "type": "module",
   "scripts": {
     "test": "node --test tests/core.test.js",
-    "test:browser": "node tests/browser.cjs"
+    "test:browser": "node tests/browser.cjs",
+    "build": "node scripts/build-ui.mjs",
+    "typecheck": "tsc --noEmit",
+    "build:site": "npm run build && node scripts/prepare-site.mjs"
+  },
+  "dependencies": {
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2"
   }
 }

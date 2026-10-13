@@ -2319,3 +2319,7 @@ body:has(.expanded-player[open]) { overflow: hidden; }
     .popup-discs .dcc-nav { display: none; }
     .popup-discs .dcc-stage { top: 50%; }
 }
+
+.collection-pagination {display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:16px 0;color:var(--muted);font-size:12px;}
+.collection-pagination[hidden] {display:none;}
+.collection-pagination button {min-height:44px;}

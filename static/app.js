@@ -1,3 +1,4 @@
+import {collectionPage} from './pagination.js';
 import {mountDiscUI} from './disc-ui.js';
 import {PlaybackQueue, formatTime, matchesTrack, normalizeSong, safeHttpsUrl} from './core.js';
 import {searchStations, recordStationClick} from './radio.js';
@@ -7,6 +8,7 @@ const $ = id => document.getElementById(id);
 const audio = $('audioPlayer');
 const queue = new PlaybackQueue();
 let discUI;
+let libraryPage = 0, queuePage = 0;
 const knownTracks = new Map();
 let radioClickRecorded = false;
 let library = [], stations = [], view = 'home', playlistId = '', query = '', radioTag = '', radioOffset = 0;
@@ -134,8 +136,16 @@ function renderTrackList() {
     $('listCount').textContent = `${tracks.length} ${tracks.length === 1 ? 'track' : 'tracks'}`;
     $('playListBtn').disabled = !tracks.length;
     $('deletePlaylistBtn').hidden = view !== 'playlist';
+    const page = collectionPage(tracks, libraryPage);
+    libraryPage = page.page;
+    $('trackPagination').hidden = page.pages === 1;
+    $('trackPageInfo').textContent = `${page.start + 1}–${page.end} of ${tracks.length} tracks`;
+    $('previousTracksBtn').disabled = page.page === 0;
+    $('nextTracksBtn').disabled = page.page + 1 === page.pages;
     $('trackList').replaceChildren();
-    for (const [index, track] of tracks.entries()) {
+    const fragment = document.createDocumentFragment();
+    for (const [localIndex, track] of page.items.entries()) {
+        const index = page.start + localIndex;
         const row = el('div', `track-row${currentTrack?.id === track.id ? ' active' : ''}`);
         const button = el('button', 'track-main'); button.setAttribute('aria-label', `Play ${track.title} by ${track.artist}`);
         const text = el('span', 'track-text'); text.append(el('strong', '', track.title), el('small', '', track.artist)); button.append(artwork(track), text);
@@ -143,8 +153,9 @@ function renderTrackList() {
         const actions = trackActions(track, view === 'playlist');
         const time = el('span', 'track-duration', track.source === 'radio' ? 'LIVE' : track.duration ? formatTime(track.duration) : '—'); actions.prepend(time);
         row.append(el('span', 'track-number', String(index + 1).padStart(2, '0')), button, el('span', 'track-album', track.album), actions);
-        $('trackList').append(row);
+        fragment.append(row);
     }
+    $('trackList').append(fragment);
     $('emptyState').hidden = tracks.length > 0;
     $('emptyTitle').textContent = query ? 'No matching tracks' : view === 'library' ? 'Make room for your music' : 'Nothing here yet';
     $('emptyDescription').textContent = query ? 'Try another title or artist.' : view === 'library' ? 'Use Add your music to choose audio files from this device.' : 'Use the heart to save favorites, or the playlist button to build a mix.';
@@ -187,7 +198,7 @@ function render() {
 }
 function changeView(nextView, id = '') {
     const previousView = view;
-    view = nextView; playlistId = id;
+    view = nextView; playlistId = id; libraryPage = 0;
     $('homeView').hidden = view !== 'home'; $('libraryView').hidden = view === 'home';
     const title = view === 'home' ? 'Listen' : view === 'library' ? 'Your library' : view === 'favorites' ? 'Favorites' : playlists.find(item => item.id === id)?.name || 'Playlist';
     $('viewBreadcrumb').textContent = title;
@@ -200,7 +211,14 @@ function changeView(nextView, id = '') {
 function renderQueue() {
     $('queueList').replaceChildren(); $('queueCount').textContent = `${queue.items.length} ${queue.items.length === 1 ? 'track' : 'tracks'}`;
     $('queueEmpty').hidden = queue.items.length > 0;
-    queue.items.forEach((track, index) => {
+    const page = collectionPage(queue.items, queuePage);
+    queuePage = page.page;
+    $('queuePagination').hidden = page.pages === 1;
+    $('queuePageInfo').textContent = `${page.start + 1}–${page.end} of ${queue.items.length}`;
+    $('previousQueueBtn').disabled = page.page === 0;
+    $('nextQueueBtn').disabled = page.page + 1 === page.pages;
+    page.items.forEach((track, localIndex) => {
+        const index = page.start + localIndex;
         const row = el('div', `queue-item${index === queue.index ? ' current' : ''}`);
         const button = el('button', 'queue-track'); button.setAttribute('aria-label', `Play ${track.title} from queue`);
         const text = el('span', 'queue-text'); text.append(el('strong', '', track.title), el('small', '', index === queue.index ? 'Now playing' : track.artist));
@@ -237,7 +255,7 @@ function updateTransport() {
 }
 function loadTrack(track, autoplay) {
     if (!track?.url) return;
-    playRequest++; currentTrack = track; seeking = false; playbackStatus();
+    playRequest++; currentTrack = track; queuePage = Math.floor(Math.max(0, queue.index) / 100); seeking = false; playbackStatus();
     audio.pause(); audio.preload = track.source === 'radio' ? 'none' : 'metadata'; audio.src = track.url; audio.load();
     radioClickRecorded = false;
     $('progressBar').value = 0; $('progressBar').disabled = true; $('currentTime').textContent = track.source === 'radio' ? 'LIVE' : '0:00'; $('duration').textContent = track.source === 'radio' ? '∞' : '0:00'; fillSlider($('progressBar'));
@@ -307,6 +325,15 @@ function updateMediaSession() {
 }
 
 async function loadRadio(append = false) {
+    if (!navigator.onLine) {
+        radioController?.abort();
+        radioController = null;
+        radioLoading = false;
+        $('radioCards').setAttribute('aria-busy', 'false');
+        $('radioStatus').textContent = "You're offline. Open your library to play music saved on this device.";
+        $('retryRadioBtn').hidden = false; $('moreRadioBtn').hidden = true;
+        return;
+    }
     radioController?.abort(); radioController = new AbortController();
     const controller = radioController;
     radioLoading = true; $('radioCards').setAttribute('aria-busy', 'true');
@@ -315,7 +342,7 @@ async function loadRadio(append = false) {
     if (!append) { radioOffset = 0; stations = []; renderRadio(); }
     try {
         const result = await searchStations({query, tag: radioTag, country: $('countryFilter').value, offset: radioOffset, signal: controller.signal});
-        if (controller !== radioController) return;
+        if (controller !== radioController || controller.signal.aborted) return;
         for (const track of result.tracks) knownTracks.set(track.id, track);
         stations = [...new Map([...stations, ...result.tracks].map(track => [track.id, track])).values()];
         radioOffset += 36; $('moreRadioBtn').hidden = !result.hasMore;
@@ -443,7 +470,7 @@ $('genreFilters').addEventListener('click', event => {
 $('countryFilter').addEventListener('change', () => void loadRadio());
 $('retryRadioBtn').addEventListener('click', () => void loadRadio());
 $('moreRadioBtn').addEventListener('click', () => { if (!radioLoading) void loadRadio(true); });
-function applySearch() { query = $('searchInput').value.trim(); renderCollection(); renderTrackList(); updateDiscUI(); if (view === 'home') void loadRadio(); }
+function applySearch() { libraryPage = 0; query = $('searchInput').value.trim(); renderCollection(); renderTrackList(); updateDiscUI(); if (view === 'home') void loadRadio(); }
 $('searchInput').addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(applySearch, 350); });
 $('searchForm').addEventListener('submit', event => { event.preventDefault(); clearTimeout(searchTimer); applySearch(); });
 $('createPlaylistBtn').addEventListener('click', () => openPlaylistDialog());
@@ -510,3 +537,15 @@ $('playerDialog').addEventListener('click', event => { if (event.target !== $('p
 updateVolume(); updateModes(); updateTransport();
 void initializeLibrary();
 void loadRadio();
+
+for (const [id, delta] of [['previousTracksBtn', -1], ['nextTracksBtn', 1]]) {
+    $(id).addEventListener('click', () => { libraryPage += delta; renderTrackList(); });
+}
+for (const [id, delta] of [['previousQueueBtn', -1], ['nextQueueBtn', 1]]) {
+    $(id).addEventListener('click', () => { queuePage += delta; renderQueue(); });
+}
+window.addEventListener('online', () => { if (view === 'home') void loadRadio(); });
+window.addEventListener('offline', () => void loadRadio());
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => { /* Restricted browsers still work online. */ });
+}

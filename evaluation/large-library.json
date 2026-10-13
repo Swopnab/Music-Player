@@ -1,0 +1,26 @@
+{
+  "fixture": "synthetic catalog metadata; desktop Chromium; excludes importing 10,000 audio blobs",
+  "node": "v22.14.0",
+  "runs": [
+    {
+      "tracks": 1000,
+      "initial_load_ms": 414,
+      "open_library_ms": 148,
+      "rendered_tracks": 100,
+      "rendered_discs": 24,
+      "rendered_queue_rows": 100,
+      "dom_elements": 5900,
+      "search_with_debounce_ms": 387
+    },
+    {
+      "tracks": 10000,
+      "initial_load_ms": 217,
+      "open_library_ms": 291,
+      "rendered_tracks": 100,
+      "rendered_discs": 24,
+      "rendered_queue_rows": 100,
+      "dom_elements": 5900,
+      "search_with_debounce_ms": 385
+    }
+  ]
+}

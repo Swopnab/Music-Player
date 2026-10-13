@@ -5,7 +5,7 @@ const root = process.cwd();
 const output = path.join(root, 'dist-site');
 await rm(output, {recursive: true, force: true});
 await mkdir(output);
-for (const name of ['index.html', 'songs.json']) await copyFile(name, path.join(output, name));
+for (const name of ['index.html', 'songs.json', 'sw.js']) await copyFile(name, path.join(output, name));
 await cp('static', path.join(output, 'static'), {recursive: true});
 const catalog = JSON.parse(await readFile('songs.json', 'utf8'));
 for (const track of catalog) {

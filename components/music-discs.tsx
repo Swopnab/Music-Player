@@ -44,13 +44,15 @@ const Discs = React.memo(function Discs({tracks, current, paused, popup, onPlay}
     React.useEffect(() => { if (current && tracks.some(track => track.id === current.id)) setSelectedId(current.id); }, [current?.id]);
     const index = Math.max(0, tracks.findIndex(track => track.id === selectedId));
     const selected = tracks[index];
-    const items = React.useMemo(() => discItems(tracks), [tracks]);
+    const pageStart = Math.floor(index / 24) * 24;
+    const pageTracks = React.useMemo(() => tracks.slice(pageStart, pageStart + 24), [tracks, pageStart]);
+    const items = React.useMemo(() => discItems(pageTracks), [pageTracks]);
     if (!tracks.length) return null;
     return <div className={`music-discs ${popup ? 'popup-discs' : 'library-discs'}`}>
         <DiscCascadeCarousel
-            items={items} index={index} defaultIndex={0}
-            onIndexChange={i => setSelectedId(tracks[i]?.id)}
-            onSelect={(_, i) => onPlay(tracks[i].id)}
+            key={pageStart} items={items} index={index - pageStart} defaultIndex={0} loop={tracks.length <= 24}
+            onIndexChange={i => setSelectedId(pageTracks[i]?.id)}
+            onSelect={(_, i) => onPlay(pageTracks[i].id)}
             height={popup ? 'clamp(290px, 52svh, 560px)' : 'clamp(390px, 52svh, 540px)'}
             discSize="clamp(175px, 29cqw, 320px)"
             brand="Music." indexLabel="Tracks" reviews={false}
@@ -59,6 +61,11 @@ const Discs = React.memo(function Discs({tracks, current, paused, popup, onPlay}
             hint="Drag · ← → · click selected disc to play"
             ariaLabel={popup ? 'Now playing record carousel' : 'Your library record carousel'}
         />
+        {tracks.length > 24 && <nav className="collection-pagination" aria-label={popup ? 'Queue record pages' : 'Library record pages'}>
+            <button className="button secondary" disabled={pageStart === 0} onClick={() => setSelectedId(tracks[Math.max(0, pageStart - 24)].id)}>Previous records</button>
+            <span role="status">{pageStart + 1}–{Math.min(pageStart + 24, tracks.length)} of {tracks.length}</span>
+            <button className="button secondary" disabled={pageStart + 24 >= tracks.length} onClick={() => setSelectedId(tracks[pageStart + 24].id)}>Next records</button>
+        </nav>}
         {!popup && <div className="disc-selection">
             <div><span className="eyebrow">ON THE TURNTABLE</span><strong>{selected.title}</strong><span>{selected.artist}</span></div>
             <button className="button primary" onClick={() => onPlay(selected.id)}><Icon name="play"/>Play selected track</button>

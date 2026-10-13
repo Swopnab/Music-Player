@@ -4,11 +4,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test tests/core.test.js",
+    "test": "node --test tests/*.test.js",
     "test:browser": "node tests/browser.cjs",
     "build": "node scripts/build-ui.mjs",
     "typecheck": "tsc --noEmit",
-    "build:site": "npm run build && node scripts/prepare-site.mjs"
+    "build:site": "npm run build && node scripts/prepare-site.mjs",
+    "test:scale": "node tests/large-library.cjs"
   },
   "dependencies": {
     "react": "^19.3.0",
@@ -18,6 +19,7 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "esbuild": "^0.28.2",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "playwright": "^1.63.0"
   }
 }

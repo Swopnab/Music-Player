@@ -114,3 +114,23 @@ The bundled collection was provided by the original repository:
 - NoCopyrightSounds — **Dreams pt. II (feat. Sara Skinner)** by Lost Sky
 
 Keep the artists' required attribution and verify permission before adding or distributing more music. Imported files stay on the importing device and are not added to the public repository.
+
+## Large-library rendering and offline playback
+
+The library and queue render 100 rows per page; each disc carousel renders 24 records per page. Paging and searching still reach the full collection, and playback retains the full queue. Metadata remains in memory; this bounds rendering, not total storage or import memory.
+
+After an online visit installs the service worker, the app shell can reload offline. Imported audio stored in IndexedDB plays offline. Live radio and uncached bundled audio require a connection. Clearing site data removes imports and the shell cache; browser quotas and private-mode restrictions still apply. The cache is network-first and handles versioned asset URLs; external API requests and audio streams are excluded.
+
+```sh
+npm ci
+npx playwright install chromium --only-shell
+npm run typecheck
+npm test
+npm run build:site
+npm run test:browser
+npm run test:scale
+```
+
+`evaluation/large-library-before.json` and `evaluation/large-library.json` record one local Chromium comparison. At 1,000 synthetic tracks, rendered DOM elements dropped from 132,217 to 5,900, and opening the library took 1,169 ms before versus 148 ms after. At 10,000 tracks, the updated fixture rendered the same 5,900 elements, searched and played the last track, and kept all records reachable. These are illustrative local measurements, not device-wide guarantees or a 10,000-file import benchmark. Search timings include the input debounce.
+
+`tests/large-library.cjs` also checks an offline reload and actual playback of an imported WAV fixture. Set `MUSIC_PLAYER_BENCHMARK_OUTPUT` to save a new JSON result. `MUSIC_PLAYER_BENCHMARK_ROOT` can compare a saved previous version. The free Playwright dependency is development-only. CI runs the type checks, build, playback/layout suite, and scale/offline checks on pushes and pull requests.
